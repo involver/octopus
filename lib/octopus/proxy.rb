@@ -52,6 +52,7 @@ class Octopus::Proxy
     end
     @slaves_list = @shards.keys.map {|sym| sym.to_s}.sort 
     @slaves_list.delete('master')   
+    @slave_index = 0
   end
 
   def current_shard=(shard_symbol)
@@ -168,8 +169,7 @@ class Octopus::Proxy
     old_shard = self.current_shard
     
     if current_model.read_inheritable_attribute(:replicated) || @fully_replicated
-      self.current_shard = @slaves_list.shift.to_sym
-      @slaves_list << self.current_shard
+      self.current_shard = @slaves_list[@slave_index = (@slave_index + 1) % @slaves_list.length]
     else
       self.current_shard = :master
     end
